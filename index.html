@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Teste de Shorts</title>
+<meta name="theme-color" content="#0b0b0d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<style>
+/* Layout: ecrã único — configuração, depois feed vertical com snap a ecrã inteiro */
+:root{
+  --bg:#0b0b0d; --surface:#18181c; --line:#2c2c33; --fg:#f4f4f6; --muted:#a3a3ad;
+  --accent:#ff4d5e; --safe:rgba(255,77,94,.28);
+  --ui: Roboto, "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- Configuração ---------- */
+#setup{height:100%;overflow-y:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px}
+.wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-size:26px;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.lead{color:var(--muted);margin:0;line-height:1.5;font-size:15px}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed var(--line);border-radius:16px;padding:28px 16px;text-align:center;background:var(--surface);cursor:pointer}
+.drop.ok{border-color:var(--accent);border-style:solid}
+.drop strong{font-size:16px}
+.drop span{color:var(--muted);font-size:13px}
+.drop input{display:none}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+label.f input,label.f select{font:inherit;font-size:16px;text-transform:none;letter-spacing:0;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.extra{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.extra button{border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--fg)}
+#go{background:var(--accent);color:#fff;font-weight:700;font-size:17px;border-radius:12px;padding:16px}
+#go:disabled{opacity:.4;cursor:default}
+.tip{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+
+/* ---------- Feed ---------- */
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:#000}
+#feed{flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}
+#feed::-webkit-scrollbar{display:none}
+.slide{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#000}
+.media{position:absolute;inset:0}
+.media video{width:100%;height:100%;object-fit:cover;display:block}
+.fit-contain .media video{object-fit:contain}
+.fake{position:absolute;inset:0;overflow:hidden}
+.fake i{position:absolute;width:70%;aspect-ratio:1;border-radius:50%;filter:blur(40px);opacity:.75;animation:drift 9s ease-in-out infinite alternate}
+.fake i:nth-child(2){animation-duration:12s;animation-delay:-3s}
+@keyframes drift{from{transform:translate(-20%,-10%) scale(1)}to{transform:translate(50%,60%) scale(1.3)}}
+.sub{position:absolute;left:8%;right:22%;top:58%;text-align:center;font-weight:800;font-size:clamp(26px,8vw,40px);line-height:1.15;color:#fff;-webkit-text-stroke:1.5px #000;paint-order:stroke fill;text-shadow:0 2px 0 #000}
+.tap{position:absolute;inset:0}
+.pause{position:absolute;left:50%;top:45%;width:72px;height:72px;margin:-36px;border-radius:50%;background:rgba(0,0,0,.45);display:grid;place-items:center;pointer-events:none}
+.heart{position:absolute;width:96px;height:96px;margin:-48px;pointer-events:none;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.1);opacity:1}100%{transform:scale(1) translateY(-40px);opacity:0}}
+
+.side{position:absolute;right:max(8px,env(safe-area-inset-right,0px));bottom:118px;display:flex;flex-direction:column;align-items:center;gap:18px;width:60px}
+.act{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.act svg{width:34px;height:34px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.act.on svg path{fill:var(--accent);stroke:var(--accent)}
+.disc{width:40px;height:40px;border-radius:8px;border:2px solid #fff}
+
+.info{position:absolute;left:max(14px,env(safe-area-inset-left,0px));right:84px;bottom:22px;display:flex;flex-direction:column;gap:10px;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.ch{display:flex;align-items:center;gap:10px;min-width:0}
+.av{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;text-shadow:none}
+.ch b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.subs{background:#fff;color:#0f0f0f;font-weight:600;font-size:14px;border-radius:999px;padding:8px 14px;flex:none;text-shadow:none}
+.subs.done{background:rgba(255,255,255,.18);color:#fff}
+.cap{font-size:15px;line-height:1.35;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.music{align-self:flex-start;max-width:100%;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:none}
+.prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.25)}
+.prog i{display:block;height:100%;width:0;background:#fff}
+
+/* Zonas tapadas pela interface */
+.zone{position:absolute;background:var(--safe);border:1px dashed var(--accent);display:none;align-items:flex-start;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;padding-top:6px;pointer-events:none}
+.zones .zone{display:flex}
+.z-side{right:0;width:76px;bottom:0;height:62%}
+.z-info{left:0;right:76px;bottom:0;height:24%}
+.z-top{left:0;right:0;top:0;height:9%}
+
+.top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) max(10px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px));pointer-events:none}
+.top button{pointer-events:auto;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.45);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:600}
+.top .grp{display:flex;gap:8px}
+.top button.on{background:var(--accent)}
+.nav{height:56px;flex:none;display:grid;grid-template-columns:repeat(4,1fr);place-items:center;background:#0f0f0f;border-top:1px solid #222;padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box}
+.nav svg{width:26px;height:26px}
+.toast{position:absolute;left:50%;bottom:140px;transform:translateX(-50%);background:rgba(30,30,30,.92);padding:10px 16px;border-radius:8px;font-size:14px;z-index:6;white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.fake i{animation:none}.heart{animation-duration:.01s}}
+</style>
+
+<section id="setup">
+  <div class="wrap">
+    <h1>Testa o teu Short antes de publicar</h1>
+    <p class="lead">Escolhe o vídeo. Ele aparece no meio de um feed com outros vídeos, com os botões e o texto por cima, tal como no telemóvel.</p>
+
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="video/*">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>
+      <strong id="dropT">Escolher o meu vídeo</strong>
+      <span id="dropS">Da galeria ou dos ficheiros</span>
+    </label>
+
+    <label class="f">Nome do canal<input id="chan" type="text" placeholder="@ocanal" autocomplete="off"></label>
+    <label class="f">Descrição<input id="cap" type="text" placeholder="Título ou legenda do Short" autocomplete="off"></label>
+    <label class="f">Som (opcional)<input id="snd" type="text" placeholder="Som original" autocomplete="off"></label>
+    <div class="row">
+      <label class="f">Aparece em<select id="pos"><option value="0">1.º lugar</option><option value="2" selected>3.º lugar</option><option value="4">5.º lugar</option></select></label>
+      <label class="f">Enquadrar<select id="fit"><option value="cover" selected>Ecrã inteiro</option><option value="contain">Vídeo inteiro</option></select></label>
+    </div>
+    <div class="extra">
+      <button type="button" id="moreBtn">Juntar outros vídeos</button>
+      <span id="moreS">Opcional: o feed usa vídeos de exemplo.</span>
+      <input type="file" id="more" accept="video/*" multiple hidden>
+    </div>
+    <button id="go" disabled>Ver no feed</button>
+    <p class="tip">No feed: desliza para cima e para baixo, toca para pausar, toca duas vezes para gostar. O botão «Zonas» mostra o que fica tapado pelos botões e pelo texto. O vídeo fica só no teu telemóvel, nada é enviado.</p>
+  </div>
+</section>
+
+<div id="app" hidden>
+  <div class="top">
+    <button id="back" aria-label="Voltar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>Sair</button>
+    <div class="grp">
+      <button id="snd2">Som ligado</button>
+      <button id="zBtn">Zonas</button>
+    </div>
+  </div>
+  <div id="feed"></div>
+  <nav class="nav" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/></svg>
+    <svg viewBox="0 0 24 24" fill="#fff"><rect x="7" y="3" width="10" height="18" rx="3"/><path d="m11 9 4 3-4 3z" fill="#0f0f0f"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+  </nav>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const st={main:null,extras:[],muted:false};
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+$('#chan').value=ls.get('chan')||'';
+
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  if(st.main) URL.revokeObjectURL(st.main);
+  st.main=URL.createObjectURL(f);
+  $('#drop').classList.add('ok'); $('#dropT').textContent=f.name; $('#dropS').textContent='Toca para trocar';
+  $('#go').disabled=false;
+});
+$('#moreBtn').onclick=()=>$('#more').click();
+$('#more').addEventListener('change',e=>{
+  st.extras.forEach(u=>URL.revokeObjectURL(u));
+  st.extras=[...e.target.files].map(f=>URL.createObjectURL(f));
+  $('#moreS').textContent=st.extras.length+' vídeo(s) juntos ao feed.';
+});
+
+const FAKES=[
+ {c:['#3b6cff','#00c2a8'],t:'Ninguém estava à espera disto',ch:'@cozinhadozezinho',cap:'Receita da avó em 60 segundos',m:'Som original · cozinhadozezinho',l:'48 mil',k:'312'},
+ {c:['#ff8a00','#e5245e'],t:'Ele tentou outra vez',ch:'@skatelisboa',cap:'Terceira tentativa no Parque das Nações',m:'Ritmo de Verão · Lua Norte',l:'12 mil',k:'94'},
+ {c:['#7b2ff7','#f107a3'],t:'Espera pelo fim',ch:'@gatosdoporto',cap:'O Bolacha descobriu o aspirador',m:'Som original · gatosdoporto',l:'210 mil',k:'2,1 mil'},
+ {c:['#0f9b0f','#d4fc79'],t:'3 truques que ninguém te ensina',ch:'@dicasdecasa',cap:'Arrumar a cozinha em 5 minutos',m:'Dia Calmo · Marta Vela',l:'6,3 mil',k:'41'},
+ {c:['#1e3c72','#2a5298'],t:'Isto aconteceu mesmo',ch:'@historiasrapidas',cap:'A ponte que nunca chegou a abrir',m:'Noite Longa · Rui Faria',l:'87 mil',k:'903'},
+ {c:['#c31432','#240b36'],t:'Qual escolhias?',ch:'@quizdodia',cap:'Responde nos comentários',m:'Som original · quizdodia',l:'19 mil',k:'1,4 mil'},
+];
+const ICON={
+ like:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-8.6C1.6 8.3 3.6 5 7 5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.4 3.3 4 6.4C19 15.6 12 20 12 20z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+ dis:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-8.6C1.6 8.3 3.6 5 7 5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.4 3.3 4 6.4C19 15.6 12 20 12 20z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" transform="rotate(180 12 12.5)"/></svg>',
+ com:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>',
+ sav:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+ sha:'<svg viewBox="0 0 24 24"><path d="M13 5l8 7-8 7v-4c-5 0-8 1.5-10 5 .5-6 3.5-10 10-11z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+ note:'<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M9 4v11.3A3.5 3.5 0 1 0 11 18V8l8-2v7.3A3.5 3.5 0 1 0 21 16V2z"/></svg>',
+ play:'<svg width="34" height="34" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>',
+ big:'<svg viewBox="0 0 24 24" width="96" height="96"><path d="M12 20s-7-4.4-9-8.6C1.6 8.3 3.6 5 7 5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.4 3.3 4 6.4C19 15.6 12 20 12 20z" fill="#ff4d5e"/></svg>'
+};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function slideHTML(d){
+  const media=d.src?`<video src="${d.src}" playsinline loop preload="auto"></video>`
+    :`<div class="fake" style="background:linear-gradient(160deg,${d.c[0]},${d.c[1]})"><i style="background:${d.c[1]}"></i><i style="background:${d.c[0]}"></i></div><div class="sub">${esc(d.t)}</div>`;
+  const init=d.ch.replace('@','').charAt(0).toUpperCase()||'?';
+  return `<section class="slide">
+    <div class="media">${media}</div>
+    <div class="tap"></div>
+    <div class="pause" hidden>${ICON.play}</div>
+    <div class="side">
+      <button class="act like">${ICON.like}<span>${esc(d.l)}</span></button>
+      <button class="act">${ICON.dis}<span>Não gosto</span></button>
+      <button class="act">${ICON.com}<span>${esc(d.k)}</span></button>
+      <button class="act sv">${ICON.sav}<span>Guardar</span></button>
+      <button class="act">${ICON.sha}<span>Partilhar</span></button>
+      <div class="disc" style="background:linear-gradient(135deg,${d.c[0]},${d.c[1]})"></div>
+    </div>
+    <div class="info">
+      <div class="ch"><span class="av" style="background:${d.c[0]}">${esc(init)}</span><b>${esc(d.ch)}</b><button class="subs">Subscrever</button></div>
+      <p class="cap">${esc(d.cap)}</p>
+      <span class="music">${ICON.note}${esc(d.m)}</span>
+    </div>
+    <div class="prog"><i></i></div>
+    <div class="zone z-top">Topo</div><div class="zone z-side">Botões</div><div class="zone z-info">Nome e texto</div>
+  </section>`;
+}
+
+function build(){
+  let ch=$('#chan').value.trim()||'@ocanal'; if(!ch.startsWith('@')) ch='@'+ch;
+  ls.set('chan',ch);
+  const mine={src:st.main,c:['#ff4d5e','#ff9a5e'],ch,cap:$('#cap').value.trim()||'O meu Short',m:($('#snd').value.trim()||'Som original')+' · '+ch.slice(1),l:'0',k:'0',mine:true};
+  const fill=FAKES.slice().sort(()=>Math.random()-.5);
+  const others=st.extras.map((src,i)=>({src,c:FAKES[i%6].c,ch:FAKES[i%6].ch,cap:FAKES[i%6].cap,m:FAKES[i%6].m,l:FAKES[i%6].l,k:FAKES[i%6].k}));
+  // intercalar vídeos extra com os de exemplo
+  let list=[];const n=Math.max(fill.length,others.length);
+  for(let i=0;i<n;i++){if(others[i])list.push(others[i]);if(fill[i])list.push(fill[i]);}
+  list.splice(+$('#pos').value,0,mine);
+  list.push(mine.src?{...mine}:mine); // repete no fim, para veres de novo depois de deslizar
+  const feed=$('#feed'); feed.innerHTML=list.map(slideHTML).join('');
+  feed.scrollTop=0;
+  $('#app').classList.toggle('fit-contain',$('#fit').value==='contain');
+  [...feed.children].forEach((el,i)=>wire(el,list[i]));
+}
+
+let fakeT=null,current=null;
+function wire(el,d){
+  const v=el.querySelector('video'),pause=el.querySelector('.pause'),bar=el.querySelector('.prog i');
+  el._play=()=>{
+    pause.hidden=true;
+    if(v){v.muted=st.muted;v.play().catch(()=>{v.muted=true;st.muted=true;sndLbl();v.play().catch(()=>{})});}
+    else{el._t0=performance.now()-(el._el||0);el._run=true;}
+  };
+  el._stop=()=>{if(v)v.pause();else{el._run=false;el._el=performance.now()-el._t0;}};
+  el._reset=()=>{if(v)v.currentTime=0;else el._el=0;bar.style.width='0'};
+  if(v) v.addEventListener('timeupdate',()=>{if(v.duration)bar.style.width=(v.currentTime/v.duration*100)+'%'});
+  el._tick=now=>{if(!v&&el._run){const p=((now-el._t0)/15000)%1;bar.style.width=p*100+'%'}};
+  let last=0,tm=null;
+  el.querySelector('.tap').addEventListener('click',e=>{
+    const now=Date.now();
+    if(now-last<300){clearTimeout(tm);last=0;heart(el,e);setLike(el,true);return;}
+    last=now;
+    tm=setTimeout(()=>{
+      const playing=v?!v.paused:el._run;
+      if(playing){el._stop();pause.hidden=false}else el._play();
+    },300);
+  });
+  el.querySelector('.like').onclick=()=>setLike(el,!el.querySelector('.like').classList.contains('on'));
+  el.querySelector('.sv').onclick=e=>{e.currentTarget.classList.toggle('on');toast(e.currentTarget.classList.contains('on')?'Guardado':'Removido')};
+  const sb=el.querySelector('.subs');
+  sb.onclick=()=>{sb.classList.toggle('done');sb.textContent=sb.classList.contains('done')?'Subscrito':'Subscrever'};
+}
+function setLike(el,on){
+  const b=el.querySelector('.like'),s=b.querySelector('span');
+  if(b.classList.contains('on')===on)return;
+  b.classList.toggle('on',on);
+  if(/^\d+$/.test(s.textContent)) s.textContent=+s.textContent+(on?1:-1);
+}
+function heart(el,e){
+  const r=el.getBoundingClientRect(),h=document.createElement('div');
+  h.className='heart';h.innerHTML=ICON.big;h.style.left=(e.clientX-r.left)+'px';h.style.top=(e.clientY-r.top)+'px';
+  el.appendChild(h);setTimeout(()=>h.remove(),900);
+}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;$('#app').appendChild(d);setTimeout(()=>d.remove(),1400)}
+function sndLbl(){$('#snd2').textContent=st.muted?'Sem som':'Som ligado';$('#snd2').classList.toggle('on',st.muted)}
+
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    const el=e.target;
+    if(e.isIntersecting&&e.intersectionRatio>.6){ if(current&&current!==el){current._stop();current._reset();} current=el; el._play(); }
+    else if(el===current&&e.intersectionRatio<.4){el._stop();}
+  });
+},{threshold:[0,.4,.6,1]});
+(function loop(now){if(current&&current._tick)current._tick(now);requestAnimationFrame(loop)})(performance.now());
+
+$('#go').onclick=()=>{
+  if(!st.main)return;
+  $('#setup').hidden=true;$('#app').hidden=false;
+  current=null;build();
+  [...$('#feed').children].forEach(el=>io.observe(el));
+};
+$('#back').onclick=()=>{
+  [...$('#feed').children].forEach(el=>{io.unobserve(el);el._stop&&el._stop()});
+  $('#feed').innerHTML='';current=null;
+  $('#app').hidden=true;$('#setup').hidden=false;
+};
+$('#zBtn').onclick=e=>{$('#feed').classList.toggle('zones');e.currentTarget.classList.toggle('on')};
+$('#snd2').onclick=()=>{st.muted=!st.muted;sndLbl();const v=current&&current.querySelector('video');if(v)v.muted=st.muted};
+</script>
+
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
+</body>
+</html>
